@@ -20,6 +20,9 @@ public class AnalizadorSemantico {
     private static ArrayList<String> variable;
     private static ArrayList<String> tipoVar;
     private static ArrayList<String> valorVar;
+    private static ArrayList<String> tokens;
+    private static ArrayList<String> valorTokens;
+    private static int numIDE = 0, numOA = 0, numPR = 0, numCE = 0, numCF = 0, numOR = 0, numOB = 0;
     
     /**
      * @param codigo
@@ -35,6 +38,8 @@ public class AnalizadorSemantico {
         variable = new ArrayList<>();
         tipoVar = new ArrayList<>();
         valorVar = new ArrayList<>();
+        tokens = new ArrayList<>();
+        valorTokens = new ArrayList<>();
         
         // Se dívide el código por lineas.
         String[] lineaCodigo = codigo.split("\\n");
@@ -100,6 +105,35 @@ public class AnalizadorSemantico {
                     if (coincidencia.matches()) {
                         tipo = palabra[j];
                         tipoBase = true;
+                        
+                        // Se agrega el token.
+                        if (numPR > 0) {
+                            // Primero debemos verificar que el token no exista.
+                            for (int t = 0; t < valorTokens.size(); t++) {
+                                
+                                // Si el token existe.
+                                if (valorTokens.get(t).equals(palabra[j])) {
+                                    // Se guarda el token existente.
+                                    tokens.add(tokens.get(t));
+                                    valorTokens.add(valorTokens.get(t));
+                                }
+                                // Si no existe.
+                                else {
+                                    // Se guarda el nuevo token.
+                                    numPR++;
+                                    tokens.add("PR" +numPR);
+                                    valorTokens.add(palabra[j]);
+                                }
+                            }
+                        }
+                        // Si no hay ningún token, se registra el primero
+                        else {
+                            numPR++;
+                            tokens.add("PR" +numPR);
+                            valorTokens.add(palabra[j]);
+                        }
+                        
+                        
                         continue;
                     }
                 }
@@ -188,6 +222,21 @@ public class AnalizadorSemantico {
                 if (coincidencia.matches()) {
                     
                     // Al tratarse de una asignación, el operador relacional se almacena.
+                    if (asignacion) {
+                        stb.append(palabra[j]).append(" ");
+                    }
+                    
+                    continue;
+                }
+                
+                // Se verifica si se trata de un operador booleano.
+                patron = Pattern.compile("([&][&])$|([|][|])$");
+                coincidencia = patron.matcher(palabra[j]);
+                
+                // Se activa la bandera que almacena al operador booleano
+                if (coincidencia.matches()) {
+                    
+                    // Al tratarse de una asignación, el operador booleano se almacena.
                     if (asignacion) {
                         stb.append(palabra[j]).append(" ");
                     }
@@ -346,6 +395,11 @@ public class AnalizadorSemantico {
         return txtError.size();
     }
     
+    // Método para obtener el número de tokens.
+    public static int obtenerNumTokens() {
+        return tokens.size();
+    }
+    
     // Método para obtener los tipos de variables.
     public static String[] obtenerTipoVar() {
         
@@ -416,6 +470,42 @@ public class AnalizadorSemantico {
         
         // Se regresan todas las variables.
         return errores;
+    }
+    
+    // Método para obtener los tokens.
+    public static String[] obtenerTokens() {
+        
+        // Número de tokens registrados.
+        int tamanio = tokens.size();
+        
+        // Arreglo que almacena todos los tokens.
+        String[] tokensArray = new String[tamanio];
+        
+        // Se recorre el ArrayList de tokens.
+        for (int i = 0; i < tamanio; i++) {
+            tokensArray[i] = tokens.get(i);
+        }
+        
+        // Se regresan todas las tokens.
+        return tokensArray;
+    }
+    
+    // Método para obtener los valores de los tokens.
+    public static String[] obtenerValoresTokens() {
+        
+        // Número de valores de tokens registrados.
+        int tamanio = valorTokens.size();
+        
+        // Arreglo que almacena todas las variables.
+        String[] valorTokensArray = new String[tamanio];
+        
+        // Se recorre el ArrayList de variables.
+        for (int i = 0; i < tamanio; i++) {
+            valorTokensArray[i] = valorTokens.get(i);
+        }
+        
+        // Se regresan todas las variables.
+        return valorTokensArray;
     }
     
 }

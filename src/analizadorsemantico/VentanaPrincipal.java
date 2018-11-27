@@ -181,6 +181,12 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             dtmErrores.addRow(new Object[]{"Línea " +AnalizadorSemantico.obtenerPosError()[i], AnalizadorSemantico.obtenerTxtError()[i]});
         }
         
+        String[] tokens = AnalizadorSemantico.obtenerTokens();
+        
+        for (int i = 0; i < AnalizadorSemantico.obtenerNumTokens(); i++) {
+            System.out.println(tokens[i]);
+        }
+        
     }//GEN-LAST:event_btnAnalizarActionPerformed
 
     private void dibujarTablas() {
