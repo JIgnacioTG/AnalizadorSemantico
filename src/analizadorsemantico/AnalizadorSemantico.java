@@ -863,6 +863,37 @@ public class AnalizadorSemantico {
         StringBuilder stb = new StringBuilder();
         
         // Se recorren los tokens
+        int tamanioTokens = tokens.size();
+        
+        for (int i = 0; i < tamanioTokens; i++) {
+            String actualToken = tokens.get(i);
+            String actualValor = valorTokens.get(i);
+            String preToken = "";
+            String posToken = "";
+            Boolean primero = true;
+            Boolean ultimo = true;
+            
+            // Se guarda el token anterior necesario para algunas comprobaciones.
+            if (i > 0) {
+                preToken = tokens.get(i-1);
+                primero = false;
+            }
+            
+            // Se guarda el token posterior necesario para algunas comprobaciones.
+            if (i < tamanioTokens-1) {
+                posToken = tokens.get(i+1);
+                ultimo = false;
+            }
+            
+            // Si hay un delimitador.
+            if (actualToken.equalsIgnoreCase("DEL")) {
+                
+            }
+            
+            
+        }
+        
+        
     }
     
 }
