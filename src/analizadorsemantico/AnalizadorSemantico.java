@@ -702,6 +702,9 @@ public class AnalizadorSemantico {
                 }
             }
         }
+        
+        // Ahora el código se optimiza
+        optimizarCodigo();
     }
     
     // Método para obtener las variables.
@@ -870,13 +873,11 @@ public class AnalizadorSemantico {
             String actualValor = valorTokens.get(i);
             String preToken = "";
             String posToken = "";
-            Boolean primero = true;
             Boolean ultimo = true;
             
             // Se guarda el token anterior necesario para algunas comprobaciones.
             if (i > 0) {
                 preToken = tokens.get(i-1);
-                primero = false;
             }
             
             // Se guarda el token posterior necesario para algunas comprobaciones.
@@ -888,10 +889,73 @@ public class AnalizadorSemantico {
             // Si hay un delimitador.
             if (actualToken.equalsIgnoreCase("DEL")) {
                 
+                // Si no es el último token.
+                if (!ultimo) {
+                    
+                    // Verificar si el siguiente token es un corchete.
+                    if (posToken.equalsIgnoreCase("COR2")) {
+                        
+                        // Se agrega el delimitador tal cual.
+                        stb.append(actualValor);
+                    }
+                    
+                    // Si no es un corchete
+                    else {
+                        
+                        // Se agrega el delimitador junto a un salto de línea.
+                        stb.append(actualValor).append("\n");
+                    }
+                }
+                
+                // Si es el último token.
+                else {
+                    
+                    // Se agrega tal cual el delimitador.
+                    stb.append(actualValor);
+                }
+            }
+            
+            // Si hay una palabra reservada
+            else if (actualToken.contains("PR")) {
+                
+                // Si el anterior token es un parentesis
+                if (preToken.equalsIgnoreCase("PAR2")) {
+                    
+                    // Se realiza un salto de línea
+                    stb.append("\n");
+                }
+                
+                // Se escribe la palabra del token y un espacio.
+                stb.append(actualValor).append(" ");
+                
+            }
+            
+            // Si hay un corchete inicial
+            else if (actualToken.equalsIgnoreCase("COR1")) {
+                
+                // Se escribe un salto de línea y se escribe el corchete inicial.
+                stb.append("\n");
+                stb.append(actualValor);
+            }
+            
+            // Si hay un corchete final
+            else if (actualToken.equalsIgnoreCase("COR2")) {
+                
+                // Se escribe el corchete final y un salto de línea.
+                stb.append(actualValor);
+                stb.append("\n");
+            }
+            
+            // Con cualquier otro token, se escribe tal cual.
+            else {
+                stb.append(actualValor);
             }
             
             
         }
+        
+        // Se guarda el código optimizado
+        guardarArchivo("Codigo Optimizado.txt", stb.toString());
         
         
     }
