@@ -51,6 +51,9 @@ public class AnalizadorSemantico {
         // Variable que almacena la posición.
         int pos = 0;
         
+        // Antes de iniciar, se deben eliminar los tabs del código para evitar errores adicionales.
+        codigo = codigo.replace("\t", "");
+        
         // Se dívide el código por lineas.
         String[] lineaCodigo = codigo.split("\\n");
         
@@ -1052,10 +1055,6 @@ public class AnalizadorSemantico {
             }
             
             
-        }
-        
-        for (int i = 0; i < IDEUtil.size(); i++) {
-            System.out.println("Se reutiliza la variable en la posición " +IDEUtil.get(i));
         }
         
         // Se guarda el código optimizado

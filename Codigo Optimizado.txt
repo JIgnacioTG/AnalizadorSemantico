@@ -1,4 +1,4 @@
 int c=5;
 do 
 {}
-while (bz=10);
+while (bz==10);
