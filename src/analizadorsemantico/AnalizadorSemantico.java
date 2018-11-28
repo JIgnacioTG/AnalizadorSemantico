@@ -5,6 +5,8 @@
  */
 package analizadorsemantico;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,7 +24,7 @@ public class AnalizadorSemantico {
     private static ArrayList<String> valorVar;
     private static ArrayList<String> tokens;
     private static ArrayList<String> valorTokens;
-    private static int numIDE = 0, numOA = 0, numPR = 0, numCE = 0, numCF = 0, numOR = 0, numOB = 0;
+    private static int numIDE, numOA, numPR, numCE, numCF, numOR, numOB;
     
     /**
      * @param codigo
@@ -40,6 +42,7 @@ public class AnalizadorSemantico {
         valorVar = new ArrayList<>();
         tokens = new ArrayList<>();
         valorTokens = new ArrayList<>();
+        numIDE = 0; numOA = 0; numPR = 0; numCE = 0; numCF = 0; numOR = 0; numOB = 0;
         
         // Se dívide el código por lineas.
         String[] lineaCodigo = codigo.split("\\n");
@@ -94,6 +97,9 @@ public class AnalizadorSemantico {
             
             for (int j = 0; j < palabra.length; j++) {
                 
+                // Bandera para saber si el token es nuevo.
+                Boolean nuevo = true;
+                
                 // El tipo de variable base sólo es leída y almacenada con la primera palabra.
                 if (j == 0) {
                     
@@ -109,21 +115,30 @@ public class AnalizadorSemantico {
                         // Se agrega el token.
                         if (numPR > 0) {
                             // Primero debemos verificar que el token no exista.
-                            for (int t = 0; t < valorTokens.size(); t++) {
+                            // t guarda la posición del token a analizar.
+                            int t = 0;
+                            // tokensReg guarda el total de tokens registrados hasta el momento.
+                            int tokensReg = tokens.size();
+                            while (t < tokensReg) {
                                 
                                 // Si el token existe.
                                 if (valorTokens.get(t).equals(palabra[j])) {
                                     // Se guarda el token existente.
                                     tokens.add(tokens.get(t));
                                     valorTokens.add(valorTokens.get(t));
+                                    nuevo = false;
+                                    break;
                                 }
-                                // Si no existe.
-                                else {
-                                    // Se guarda el nuevo token.
-                                    numPR++;
-                                    tokens.add("PR" +numPR);
-                                    valorTokens.add(palabra[j]);
-                                }
+                                
+                                t++;
+                                
+                            }
+                            
+                            if (nuevo) {
+                                // Se guarda el nuevo token.
+                                numPR++;
+                                tokens.add("PR" +numPR);
+                                valorTokens.add(palabra[j]);
                             }
                         }
                         // Si no hay ningún token, se registra el primero
@@ -144,6 +159,43 @@ public class AnalizadorSemantico {
                 
                 // Si coinicide, se verifica la siguiente palabra.
                 if (coincidencia.matches()) {
+                    
+                    // Se agrega el token.
+                        if (numPR > 0) {
+                            // Primero debemos verificar que el token no exista.
+                            // t guarda la posición del token a analizar.
+                            int t = 0;
+                            // tokensReg guarda el total de tokens registrados hasta el momento.
+                            int tokensReg = tokens.size();
+                            while (t < tokensReg) {
+                                
+                                // Si el token existe.
+                                if (valorTokens.get(t).equals(palabra[j])) {
+                                    // Se guarda el token existente.
+                                    tokens.add(tokens.get(t));
+                                    valorTokens.add(valorTokens.get(t));
+                                    nuevo = false;
+                                    break;
+                                }
+                                
+                                t++;
+                                
+                            }
+                            
+                            if (nuevo) {
+                                // Se guarda el nuevo token.
+                                numPR++;
+                                tokens.add("PR" +numPR);
+                                valorTokens.add(palabra[j]);
+                            }
+                        }
+                        // Si no hay ningún token, se registra el primero
+                        else {
+                            numPR++;
+                            tokens.add("PR" +numPR);
+                            valorTokens.add(palabra[j]);
+                        }
+                    
                     continue;
                 }
                 
@@ -157,6 +209,75 @@ public class AnalizadorSemantico {
                     
                     // Se inicia StringBuilder para empezar almacenar el valor de la variable.
                     stb = new StringBuilder();
+                    
+                    // Se registra el token de asignación.
+                    tokens.add("OAS");
+                    valorTokens.add("=");
+                    
+                    continue;
+                }
+                
+                // Se verifica si es el delimitador.
+                patron = Pattern.compile("^[;]$");
+                coincidencia = patron.matcher(palabra[j]);
+                
+                if (coincidencia.matches()) {
+                    
+                    // Se registra el token de delimitador.
+                    tokens.add("DEL");
+                    valorTokens.add(";");
+                    
+                    continue;
+                }
+                
+                // Se verifica si es un parentesis.
+                patron = Pattern.compile("[(]$");
+                coincidencia = patron.matcher(palabra[j]);
+                
+                if (coincidencia.matches()) {
+                    
+                    // Se registra el token de parentesis.
+                    tokens.add("PAR1");
+                    valorTokens.add("(");
+                    
+                    continue;
+                }
+                
+                // Se verifica si es un parentesis.
+                patron = Pattern.compile("[)]$");
+                coincidencia = patron.matcher(palabra[j]);
+                
+                if (coincidencia.matches()) {
+                    
+                    // Se registra el token de parentesis.
+                    tokens.add("PAR2");
+                    valorTokens.add(")");
+                    
+                    continue;
+                }
+                
+                // Se verifica si es un corchete.
+                patron = Pattern.compile("[{]$");
+                coincidencia = patron.matcher(palabra[j]);
+                
+                if (coincidencia.matches()) {
+                    
+                    // Se registra el token de delimitador.
+                    tokens.add("COR1");
+                    valorTokens.add("{");
+                    
+                    continue;
+                }
+                
+                // Se verifica si es un corchete.
+                patron = Pattern.compile("[}]$");
+                coincidencia = patron.matcher(palabra[j]);
+                
+                if (coincidencia.matches()) {
+                    
+                    // Se registra el token de delimitador.
+                    tokens.add("COR2");
+                    valorTokens.add("}");
                     
                     continue;
                 }
@@ -172,6 +293,42 @@ public class AnalizadorSemantico {
                     if (asignacion) {
                         stb.append(palabra[j]).append(" ");
                     }
+                    
+                    // Se agrega el token.
+                        if (numCE > 0) {
+                            // Primero debemos verificar que el token no exista.
+                            // t guarda la posición del token a analizar.
+                            int t = 0;
+                            // tokensReg guarda el total de tokens registrados hasta el momento.
+                            int tokensReg = tokens.size();
+                            while (t < tokensReg) {
+                                
+                                // Si el token existe.
+                                if (valorTokens.get(t).equals(palabra[j])) {
+                                    // Se guarda el token existente.
+                                    tokens.add(tokens.get(t));
+                                    valorTokens.add(valorTokens.get(t));
+                                    nuevo = false;
+                                    break;
+                                }
+                                
+                                t++;
+                                
+                            }
+                            
+                            if (nuevo) {
+                                // Se guarda el nuevo token.
+                                numCE++;
+                                tokens.add("CE" +numCE);
+                                valorTokens.add(palabra[j]);
+                            }
+                        }
+                        // Si no hay ningún token, se registra el primero
+                        else {
+                            numCE++;
+                            tokens.add("CE" +numCE);
+                            valorTokens.add(palabra[j]);
+                        }
                     
                     continue;
                 }
@@ -196,6 +353,42 @@ public class AnalizadorSemantico {
                         stb.append(palabra[j]).append(" ");
                     }
                     
+                    // Se agrega el token.
+                        if (numCF > 0) {
+                            // Primero debemos verificar que el token no exista.
+                            // t guarda la posición del token a analizar.
+                            int t = 0;
+                            // tokensReg guarda el total de tokens registrados hasta el momento.
+                            int tokensReg = tokens.size();
+                            while (t < tokensReg) {
+                                
+                                // Si el token existe.
+                                if (valorTokens.get(t).equals(palabra[j])) {
+                                    // Se guarda el token existente.
+                                    tokens.add(tokens.get(t));
+                                    valorTokens.add(valorTokens.get(t));
+                                    nuevo = false;
+                                    break;
+                                }
+                                
+                                t++;
+                                
+                            }
+                            
+                            if (nuevo) {
+                                // Se guarda el nuevo token.
+                                numCF++;
+                                tokens.add("CF" +numCF);
+                                valorTokens.add(palabra[j]);
+                            }
+                        }
+                        // Si no hay ningún token, se registra el primero
+                        else {
+                            numCF++;
+                            tokens.add("CF" +numCF);
+                            valorTokens.add(palabra[j]);
+                        }
+                    
                     continue;
                 }
                 
@@ -210,6 +403,42 @@ public class AnalizadorSemantico {
                     if (asignacion) {
                         stb.append(palabra[j]).append(" ");
                     }
+                    
+                    // Se agrega el token.
+                        if (numOA > 0) {
+                            // Primero debemos verificar que el token no exista.
+                            // t guarda la posición del token a analizar.
+                            int t = 0;
+                            // tokensReg guarda el total de tokens registrados hasta el momento.
+                            int tokensReg = tokens.size();
+                            while (t < tokensReg) {
+                                
+                                // Si el token existe.
+                                if (valorTokens.get(t).equals(palabra[j])) {
+                                    // Se guarda el token existente.
+                                    tokens.add(tokens.get(t));
+                                    valorTokens.add(valorTokens.get(t));
+                                    nuevo = false;
+                                    break;
+                                }
+                                
+                                t++;
+                                
+                            }
+                            
+                            if (nuevo) {
+                                // Se guarda el nuevo token.
+                                numOA++;
+                                tokens.add("OA" +numOA);
+                                valorTokens.add(palabra[j]);
+                            }
+                        }
+                        // Si no hay ningún token, se registra el primero
+                        else {
+                            numOA++;
+                            tokens.add("OA" +numOA);
+                            valorTokens.add(palabra[j]);
+                        }
                     
                     continue;
                 }
@@ -226,6 +455,42 @@ public class AnalizadorSemantico {
                         stb.append(palabra[j]).append(" ");
                     }
                     
+                    // Se agrega el token.
+                        if (numOR > 0) {
+                            // Primero debemos verificar que el token no exista.
+                            // t guarda la posición del token a analizar.
+                            int t = 0;
+                            // tokensReg guarda el total de tokens registrados hasta el momento.
+                            int tokensReg = tokens.size();
+                            while (t < tokensReg) {
+                                
+                                // Si el token existe.
+                                if (valorTokens.get(t).equals(palabra[j])) {
+                                    // Se guarda el token existente.
+                                    tokens.add(tokens.get(t));
+                                    valorTokens.add(valorTokens.get(t));
+                                    nuevo = false;
+                                    break;
+                                }
+                                
+                                t++;
+                                
+                            }
+                            
+                            if (nuevo) {
+                                // Se guarda el nuevo token.
+                                numOR++;
+                                tokens.add("OR" +numOR);
+                                valorTokens.add(palabra[j]);
+                            }
+                        }
+                        // Si no hay ningún token, se registra el primero
+                        else {
+                            numOR++;
+                            tokens.add("OR" +numOR);
+                            valorTokens.add(palabra[j]);
+                        }
+                    
                     continue;
                 }
                 
@@ -240,6 +505,42 @@ public class AnalizadorSemantico {
                     if (asignacion) {
                         stb.append(palabra[j]).append(" ");
                     }
+                    
+                    // Se agrega el token.
+                        if (numOB > 0) {
+                            // Primero debemos verificar que el token no exista.
+                            // t guarda la posición del token a analizar.
+                            int t = 0;
+                            // tokensReg guarda el total de tokens registrados hasta el momento.
+                            int tokensReg = tokens.size();
+                            while (t < tokensReg) {
+                                
+                                // Si el token existe.
+                                if (valorTokens.get(t).equals(palabra[j])) {
+                                    // Se guarda el token existente.
+                                    tokens.add(tokens.get(t));
+                                    valorTokens.add(valorTokens.get(t));
+                                    nuevo = false;
+                                    break;
+                                }
+                                
+                                t++;
+                                
+                            }
+                            
+                            if (nuevo) {
+                                // Se guarda el nuevo token.
+                                numOB++;
+                                tokens.add("OB" +numOB);
+                                valorTokens.add(palabra[j]);
+                            }
+                        }
+                        // Si no hay ningún token, se registra el primero
+                        else {
+                            numOB++;
+                            tokens.add("OB" +numOB);
+                            valorTokens.add(palabra[j]);
+                        }
                     
                     continue;
                 }
@@ -332,6 +633,42 @@ public class AnalizadorSemantico {
                             stb.append(palabra[j]).append(" ");
                         }
                     }
+                    
+                    // Se agrega el token.
+                        if (numIDE > 0) {
+                            // Primero debemos verificar que el token no exista.
+                            // t guarda la posición del token a analizar.
+                            int t = 0;
+                            // tokensReg guarda el total de tokens registrados hasta el momento.
+                            int tokensReg = tokens.size();
+                            while (t < tokensReg) {
+                                
+                                // Si el token existe.
+                                if (valorTokens.get(t).equals(palabra[j])) {
+                                    // Se guarda el token existente.
+                                    tokens.add(tokens.get(t));
+                                    valorTokens.add(valorTokens.get(t));
+                                    nuevo = false;
+                                    break;
+                                }
+                                
+                                t++;
+                                
+                            }
+                            
+                            if (nuevo) {
+                                // Se guarda el nuevo token.
+                                numIDE++;
+                                tokens.add("IDE" +numIDE);
+                                valorTokens.add(palabra[j]);
+                            }
+                        }
+                        // Si no hay ningún token, se registra el primero
+                        else {
+                            numIDE++;
+                            tokens.add("IDE" +numIDE);
+                            valorTokens.add(palabra[j]);
+                        }
                     
                     // Se verifica la siguiente palabra si no es necesario agregar.
                     if (salto) {
@@ -506,6 +843,26 @@ public class AnalizadorSemantico {
         
         // Se regresan todas las variables.
         return valorTokensArray;
+    }
+    
+    // Método para guardar el archivo de texto.
+    public static void guardarArchivo(String archivo, String texto) {
+        
+        try (FileWriter fw = new FileWriter(archivo)) {
+            fw.write(texto);
+        }
+        catch (IOException ex) {
+            System.out.println("No se pudo guardar el archivo.");
+        }
+    }
+    
+    // Metodo encargado de la optimización del código.
+    public static void optimizarCodigo() {
+        
+        // Objeto para la construcción de strings.
+        StringBuilder stb = new StringBuilder();
+        
+        // Se recorren los tokens
     }
     
 }
