@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 public class AnalizadorSemantico {
     
     private static ArrayList<Integer> posError;
+    private static ArrayList<String> IDEUtil;
     private static ArrayList<String> txtError;
     private static ArrayList<String> variable;
     private static ArrayList<String> tipoVar;
@@ -25,6 +26,7 @@ public class AnalizadorSemantico {
     private static ArrayList<String> tokens;
     private static ArrayList<String> valorTokens;
     private static int numIDE, numOA, numPR, numCE, numCF, numOR, numOB;
+    private static String ultimoIDE;
     
     /**
      * @param codigo
@@ -36,6 +38,7 @@ public class AnalizadorSemantico {
         
         // Se inicializan las listas.
         posError = new ArrayList<>();
+        IDEUtil = new ArrayList<>();
         txtError = new ArrayList<>();
         variable = new ArrayList<>();
         tipoVar = new ArrayList<>();
@@ -43,6 +46,10 @@ public class AnalizadorSemantico {
         tokens = new ArrayList<>();
         valorTokens = new ArrayList<>();
         numIDE = 0; numOA = 0; numPR = 0; numCE = 0; numCF = 0; numOR = 0; numOB = 0;
+        ultimoIDE = "";
+        
+        // Variable que almacena la posición.
+        int pos = 0;
         
         // Se dívide el código por lineas.
         String[] lineaCodigo = codigo.split("\\n");
@@ -148,7 +155,7 @@ public class AnalizadorSemantico {
                             valorTokens.add(palabra[j]);
                         }
                         
-                        
+                        pos++;
                         continue;
                     }
                 }
@@ -196,6 +203,7 @@ public class AnalizadorSemantico {
                             valorTokens.add(palabra[j]);
                         }
                     
+                        pos++;
                     continue;
                 }
                 
@@ -214,6 +222,7 @@ public class AnalizadorSemantico {
                     tokens.add("OAS");
                     valorTokens.add("=");
                     
+                    pos++;
                     continue;
                 }
                 
@@ -227,6 +236,7 @@ public class AnalizadorSemantico {
                     tokens.add("DEL");
                     valorTokens.add(";");
                     
+                    pos++;
                     continue;
                 }
                 
@@ -240,6 +250,7 @@ public class AnalizadorSemantico {
                     tokens.add("PAR1");
                     valorTokens.add("(");
                     
+                    pos++;
                     continue;
                 }
                 
@@ -253,6 +264,7 @@ public class AnalizadorSemantico {
                     tokens.add("PAR2");
                     valorTokens.add(")");
                     
+                    pos++;
                     continue;
                 }
                 
@@ -266,6 +278,7 @@ public class AnalizadorSemantico {
                     tokens.add("COR1");
                     valorTokens.add("{");
                     
+                    pos++;
                     continue;
                 }
                 
@@ -279,6 +292,7 @@ public class AnalizadorSemantico {
                     tokens.add("COR2");
                     valorTokens.add("}");
                     
+                    pos++;
                     continue;
                 }
                 
@@ -330,6 +344,7 @@ public class AnalizadorSemantico {
                             valorTokens.add(palabra[j]);
                         }
                     
+                    pos++;
                     continue;
                 }
                 
@@ -389,6 +404,7 @@ public class AnalizadorSemantico {
                             valorTokens.add(palabra[j]);
                         }
                     
+                    pos++;
                     continue;
                 }
                 
@@ -440,6 +456,7 @@ public class AnalizadorSemantico {
                             valorTokens.add(palabra[j]);
                         }
                     
+                    pos++;
                     continue;
                 }
                 
@@ -491,6 +508,7 @@ public class AnalizadorSemantico {
                             valorTokens.add(palabra[j]);
                         }
                     
+                    pos++;
                     continue;
                 }
                 
@@ -542,6 +560,7 @@ public class AnalizadorSemantico {
                             valorTokens.add(palabra[j]);
                         }
                     
+                    pos++;
                     continue;
                 }
                 
@@ -552,9 +571,13 @@ public class AnalizadorSemantico {
                 // Sí coincide se asigna el tipo base si no ha sido declarado antes.
                 if (coincidencia.matches()) {
                     
+                    // Variable donde se almacena el tipo de la variable que se analiza.
+                    String tipoPalabra = "null";
+                    
                     // Se verifica si esta es la variable base de la línea, de ser así, se almacena.
                     if (tipoBase && !varBase) {
                         var = palabra[j];
+                        tipoPalabra = tipo;
                         varBase = true;
                     }
                     
@@ -562,7 +585,7 @@ public class AnalizadorSemantico {
                     Boolean salto = false;
                     
                     // Variable donde se almacena el tipo de la variable que se analiza.
-                    String tipoPalabra = tipo;
+                    //String tipoPalabra = tipo;
                     
                     // Variable donde se almacena el valor de la variable que se analiza.
                     String valorPalabra = valor;
@@ -635,43 +658,51 @@ public class AnalizadorSemantico {
                     }
                     
                     // Se agrega el token.
-                        if (numIDE > 0) {
-                            // Primero debemos verificar que el token no exista.
-                            // t guarda la posición del token a analizar.
-                            int t = 0;
-                            // tokensReg guarda el total de tokens registrados hasta el momento.
-                            int tokensReg = tokens.size();
-                            while (t < tokensReg) {
-                                
-                                // Si el token existe.
-                                if (valorTokens.get(t).equals(palabra[j])) {
-                                    // Se guarda el token existente.
-                                    tokens.add(tokens.get(t));
-                                    valorTokens.add(valorTokens.get(t));
-                                    nuevo = false;
-                                    break;
-                                }
-                                
-                                t++;
-                                
-                            }
+                    if (numIDE > 0) {
+                        // Primero debemos verificar que el token no exista.
+                        // t guarda la posición del token a analizar.
+                        int t = 0;
+                        // tokensReg guarda el total de tokens registrados hasta el momento.
+                        int tokensReg = tokens.size();
+                        while (t < tokensReg) {
                             
-                            if (nuevo) {
-                                // Se guarda el nuevo token.
-                                numIDE++;
-                                tokens.add("IDE" +numIDE);
-                                valorTokens.add(palabra[j]);
+                            // Si el token existe.
+                            if (valorTokens.get(t).equals(palabra[j])) {
+                                // Se guarda el token existente.
+                                tokens.add(tokens.get(t));
+                                valorTokens.add(valorTokens.get(t));
+                                nuevo = false;
+                                
+                                // Se debe registrar la posición de esta variable que esta siendo utilizada en una asignación.
+                                if (asignacion) {
+                                    IDEUtil.add(tokens.get(t));
+                                }
+                            
+                                break;
                             }
+                                
+                            t++;
+                                
                         }
-                        // Si no hay ningún token, se registra el primero
-                        else {
+                            
+                        if (nuevo) {
+                            // Se guarda el nuevo token.
                             numIDE++;
+                            ultimoIDE = "IDE" +numIDE;
                             tokens.add("IDE" +numIDE);
                             valorTokens.add(palabra[j]);
                         }
+                    }
+                    // Si no hay ningún token, se registra el primero
+                    else {
+                        numIDE++;
+                        tokens.add("IDE" +numIDE);
+                        valorTokens.add(palabra[j]);
+                    }
                     
                     // Se verifica la siguiente palabra si no es necesario agregar.
                     if (salto) {
+                        pos++;
                         continue;
                     }
                     
@@ -679,6 +710,8 @@ public class AnalizadorSemantico {
                     variable.add(palabra[j]);
                     tipoVar.add(tipoPalabra);
                     valorVar.add(valorPalabra);
+                    
+                    pos++;
                     
                 }
                 
@@ -702,6 +735,9 @@ public class AnalizadorSemantico {
                 }
             }
         }
+        
+        // Se agrega como utilizado el ultimo IDE.
+        IDEUtil.add(ultimoIDE);
         
         // Ahora el código se optimiza
         optimizarCodigo();
@@ -918,6 +954,39 @@ public class AnalizadorSemantico {
             // Si hay una palabra reservada
             else if (actualToken.contains("PR")) {
                 
+                // Si el siguiente es un IDE
+                if (posToken.contains("IDE")) {
+                    
+                    // Bandera para eliminación de código
+                    Boolean eliminar = true;
+
+                    // Se debe verificar si este IDE es utilizado
+                    for (int j = 0; j < IDEUtil.size(); j++) {
+
+                        // Si el IDE ha sido utilizado, se marca la bandera de Eliminar como falsa.
+                        if (posToken.equalsIgnoreCase(IDEUtil.get(j))) {
+                            eliminar = false;
+                            break;
+                        }
+                    }
+
+                    // Si la variable se debe eliminar
+                    if (eliminar) {
+                        
+                        // Se salta la lectura de la PR
+                        i++;
+                        
+                        // Mientras no se llegue a un delimitador, saltar tokens.
+                        while (!tokens.get(i).equalsIgnoreCase("DEL")) {
+                            i++;
+                        }
+
+                        // En este caso el valor no sera añadido asi que se continua con el ciclo.
+                        continue;
+                    }
+                    
+                }
+                
                 // Si el anterior token es un parentesis
                 if (preToken.equalsIgnoreCase("PAR2")) {
                     
@@ -946,12 +1015,47 @@ public class AnalizadorSemantico {
                 stb.append("\n");
             }
             
+            // Si hay un identificador
+            else if (actualToken.contains("IDE")) {
+                
+                // Bandera para eliminación de código
+                Boolean eliminar = true;
+                
+                // Se debe verificar si este IDE es utilizado
+                for (int j = 0; j < IDEUtil.size(); j++) {
+                    
+                    // Si el IDE ha sido utilizado, se marca la bandera de Eliminar como falsa.
+                    if (actualToken.equalsIgnoreCase(IDEUtil.get(j))) {
+                        eliminar = false;
+                        break;
+                    }
+                }
+                
+                // Si la variable se debe eliminar
+                if (eliminar) {
+                    
+                    // Mientras no se llegue a un delimitador, saltar tokens.
+                    while (!tokens.get(i).equalsIgnoreCase("DEL")) {
+                        i++;
+                    }
+                    
+                    // En este caso el valor no sera añadido asi que se continua con el ciclo.
+                    continue;
+                }
+                
+                stb.append(actualValor);
+            }
+            
             // Con cualquier otro token, se escribe tal cual.
             else {
                 stb.append(actualValor);
             }
             
             
+        }
+        
+        for (int i = 0; i < IDEUtil.size(); i++) {
+            System.out.println("Se reutiliza la variable en la posición " +IDEUtil.get(i));
         }
         
         // Se guarda el código optimizado
