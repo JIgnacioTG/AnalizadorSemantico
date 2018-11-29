@@ -990,6 +990,42 @@ public class AnalizadorSemantico {
                     
                 }
                 
+                // Si el siguiente token es un parentesis inicial.
+                if (posToken.equalsIgnoreCase("PAR1")) {
+                    // Si el siguiente es un IDE
+                    if (tokens.get(i+2).contains("IDE")) {
+
+                        // Bandera para eliminación de código
+                        Boolean eliminar = true;
+
+                        // Se debe verificar si este IDE es utilizado
+                        for (int j = 0; j < IDEUtil.size(); j++) {
+
+                            // Si el IDE ha sido utilizado, se marca la bandera de Eliminar como falsa.
+                            if (tokens.get(i+2).equalsIgnoreCase(IDEUtil.get(j))) {
+                                eliminar = false;
+                                break;
+                            }
+                        }
+
+                        // Si la variable se debe eliminar
+                        if (eliminar) {
+
+                            // Se salta la lectura de la PR y PAR
+                            i+=2;
+
+                            // Mientras no se llegue a un delimitador, saltar tokens.
+                            while (!tokens.get(i).equalsIgnoreCase("DEL")) {
+                                i++;
+                            }
+
+                            // En este caso el valor no sera añadido asi que se continua con el ciclo.
+                            continue;
+                        }
+
+                    }
+                }
+                
                 // Si el anterior token es un parentesis
                 if (preToken.equalsIgnoreCase("PAR2")) {
                     
