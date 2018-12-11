@@ -25,8 +25,11 @@ public class AnalizadorSemantico {
     private static ArrayList<String> valorVar;
     private static ArrayList<String> tokens;
     private static ArrayList<String> valorTokens;
+    private static ArrayList<String> optTokens;
+    private static ArrayList<String> optValores;
     private static int numIDE, numOA, numPR, numCE, numCF, numOR, numOB;
     private static String ultimoIDE;
+    private static String saltoLinea;
     
     /**
      * @param codigo
@@ -45,8 +48,11 @@ public class AnalizadorSemantico {
         valorVar = new ArrayList<>();
         tokens = new ArrayList<>();
         valorTokens = new ArrayList<>();
+        optTokens = new ArrayList<>();
+        optValores = new ArrayList<>();
         numIDE = 0; numOA = 0; numPR = 0; numCE = 0; numCF = 0; numOR = 0; numOB = 0;
         ultimoIDE = "";
+        saltoLinea = System.getProperty("line.separator");
         
         // Variable que almacena la posición.
         int pos = 0;
@@ -744,6 +750,9 @@ public class AnalizadorSemantico {
         
         // Ahora el código se optimiza
         optimizarCodigo();
+        
+        // Se genera la tripleta
+        generarTripleta();
     }
     
     // Método para obtener las variables.
@@ -904,6 +913,10 @@ public class AnalizadorSemantico {
         // Objeto para la construcción de strings.
         StringBuilder stb = new StringBuilder();
         
+        // Listas temporales para tokens optimizados.
+        optTokens = new ArrayList<>();
+        optValores = new ArrayList<>();
+        
         // Se recorren los tokens
         int tamanioTokens = tokens.size();
         
@@ -936,13 +949,17 @@ public class AnalizadorSemantico {
                         
                         // Se agrega el delimitador tal cual.
                         stb.append(actualValor);
+                        optTokens.add(actualToken);
+                        optValores.add(actualValor);
                     }
                     
                     // Si no es un corchete
                     else {
                         
                         // Se agrega el delimitador junto a un salto de línea.
-                        stb.append(actualValor).append("\n");
+                        stb.append(actualValor).append(saltoLinea);
+                        optTokens.add(actualToken);
+                        optValores.add(actualValor);
                     }
                 }
                 
@@ -951,6 +968,8 @@ public class AnalizadorSemantico {
                     
                     // Se agrega tal cual el delimitador.
                     stb.append(actualValor);
+                    optTokens.add(actualToken);
+                    optValores.add(actualValor);
                 }
             }
             
@@ -1030,11 +1049,15 @@ public class AnalizadorSemantico {
                 if (preToken.equalsIgnoreCase("PAR2")) {
                     
                     // Se realiza un salto de línea
-                    stb.append("\n");
+                    stb.append(saltoLinea);
+                    optTokens.add(actualToken);
+                    optValores.add(actualValor);
                 }
                 
                 // Se escribe la palabra del token y un espacio.
                 stb.append(actualValor).append(" ");
+                optTokens.add(actualToken);
+                optValores.add(actualValor);
                 
             }
             
@@ -1042,8 +1065,10 @@ public class AnalizadorSemantico {
             else if (actualToken.equalsIgnoreCase("COR1")) {
                 
                 // Se escribe un salto de línea y se escribe el corchete inicial.
-                stb.append("\n");
+                stb.append(saltoLinea);
                 stb.append(actualValor);
+                optTokens.add(actualToken);
+                optValores.add(actualValor);
             }
             
             // Si hay un corchete final
@@ -1051,7 +1076,9 @@ public class AnalizadorSemantico {
                 
                 // Se escribe el corchete final y un salto de línea.
                 stb.append(actualValor);
-                stb.append("\n");
+                stb.append(saltoLinea);
+                optTokens.add(actualToken);
+                optValores.add(actualValor);
             }
             
             // Si hay un identificador
@@ -1083,20 +1110,212 @@ public class AnalizadorSemantico {
                 }
                 
                 stb.append(actualValor);
+                optTokens.add(actualToken);
+                optValores.add(actualValor);
             }
             
             // Con cualquier otro token, se escribe tal cual.
             else {
                 stb.append(actualValor);
+                optTokens.add(actualToken);
+                optValores.add(actualValor);
             }
             
             
         }
         
+        // Se guardan los tokens optimizados
+        tokens = optTokens;
+        valorTokens = optValores;
+        
         // Se guarda el código optimizado
         guardarArchivo("Codigo Optimizado.txt", stb.toString());
         
+    }
+    
+    public static void generarTripleta () {
         
+        // Variable que apunta el token que se esta trabajando
+        int apun = 0;
+        
+        // Indica el numero de instruccion.
+        int numIns = 1;
+        
+        // Numero de tripleta
+        int numTrip = 1;
+        
+        // Numero de condicion
+        int numCon = 1;
+        
+        // Variable que almacena la tripleta actual
+        String[] tripleta = new String[3];
+        
+        // Variables que almacenaran la tripleta
+        ArrayList<Integer> column1 = new ArrayList<>();
+        ArrayList<String> column2 = new ArrayList<>();
+        ArrayList<String> column3 = new ArrayList<>();
+        ArrayList<String> column4 = new ArrayList<>();
+        
+        // Listas que contienen las posiciones de los ciclos
+        ArrayList<Integer> insDo = new ArrayList<>();
+        
+        // Variables que almacenan el token de división y multiplicación.
+        String division = "";
+        String multiplicacion = "";
+        
+        try {
+            division = tokens.get(valorTokens.indexOf("/"));
+        }
+        catch (ArrayIndexOutOfBoundsException ex) {
+            
+        }
+        
+        try {
+            multiplicacion = tokens.get(valorTokens.indexOf("*"));
+        }
+        catch (ArrayIndexOutOfBoundsException ex) {
+            
+        }
+        
+        // Empieza la diversión, se verifica token por token.
+        for (int i = 0; i < tokens.size(); i++) {
+            
+            // Si el token es una palabra reservada, se ignora.
+            if(tokens.get(i).contains("PR")) {
+                
+                if (valorTokens.get(i).equalsIgnoreCase("do")) {
+                    insDo.add(numIns);
+                }
+                
+                // Si hay un while
+                else if (valorTokens.get(i).equalsIgnoreCase("while")) {
+                    
+                    // Se guarda en la tripleta la variable a comprobar
+                    column1.add(numIns);
+                    column2.add("T" +numTrip);
+                    column3.add(valorTokens.get(i+2));
+                    column4.add("=");
+                    numIns++;
+                    
+                    // Se analiza con que se debe comparar
+                    column1.add(numIns);
+                    column2.add("T" +numTrip);
+                    column3.add(valorTokens.get(i+4));
+                    column4.add(valorTokens.get(i+3));
+                    numIns++;
+                    
+                    // Si es verdadero, debe continuar con la siguiente instruccion.
+                    int sigIns = numIns + 2;
+                    column1.add(numIns);
+                    column2.add("TR" +numCon);
+                    column3.add("TRUE");
+                    column4.add(insDo.remove(insDo.size()-1)+"");
+                    numIns++;
+                    
+                    // Si es falso, se debe regresar al anterior do
+                    column1.add(numIns);
+                    column2.add("TR" +numCon);
+                    column3.add("FALSE");
+                    column4.add(sigIns+"");
+                    numIns++;
+                    numTrip++;
+                    numCon++;
+                    
+                }
+                
+                else {
+                    continue;
+                }
+                
+            }
+            
+            // Si el token es un operador de asignación.
+            if(tokens.get(i).contains("OAS")) {
+                
+                // Se considera si hay un delimitador despúes de su siguiente token
+                if (tokens.get(i+2).equalsIgnoreCase("DEL")) {
+                    
+                    // De ser así estamos ante una asignación simple y la tripleta.
+                    column1.add(numIns);
+                    column2.add(valorTokens.get(i-1));
+                    column3.add(valorTokens.get(i+1));
+                    column4.add("=");
+                    numIns++;
+                }
+                
+                // En este caso, tenemos una probable operación matemática.
+                else {
+                    
+                    // Variable a la que se asignará el resultado final.
+                    String variableAsig = valorTokens.get(i-1);
+                    
+                    // Se guarda en una lista nueva la operacion.
+                    ArrayList<String[]> tokensOp = new ArrayList<>();
+                    String[] token = new String[2];
+                    
+                    // Saltamos el guardado del operador de asignación.
+                    i++;
+                    
+                    while (!tokens.get(i).equalsIgnoreCase("DEL")) {
+                        token = new String[2];
+                        token[0] = tokens.get(i);
+                        token[1] = valorTokens.get(i);
+                        tokensOp.add(token);
+                        i++;
+                    }
+                    
+                    // Se va recorriendo la lista hasta que no queden variables por comparar
+                    while (tokensOp.size() > 1) {
+                        
+                        token = new String[2];
+                        
+                        // Se almacena la última variable en el triplo y se elimina de la lista.
+                        column1.add(numIns);
+                        column2.add("T" +numTrip);
+                        column3.add(tokensOp.remove(tokensOp.size()-1)[1]);
+                        column4.add("=");
+                        numIns++;
+                        
+                        // En el triplo se almacena la operacion realizada.
+                        column1.add(numIns);
+                        column2.add("T" +numTrip);
+                        column4.add(tokensOp.remove(tokensOp.size()-1)[1]);
+                        column3.add(tokensOp.remove(tokensOp.size()-1)[1]);
+                        numIns++;
+                        
+                        // Se agrega a la lista el triplo realizado.
+                        token[0] = "T" +numTrip;
+                        token[1] = "T" +numTrip;
+                        tokensOp.add(token);
+                        
+                        numTrip++;
+                    }
+                    
+                    // El resultado final es almacenado en la variable
+                    column1.add(numIns);
+                    column2.add(variableAsig);
+                    column3.add(tokensOp.get(0)[1]);
+                    column4.add("=");
+                    numIns++;
+                    
+                }
+            }
+        }
+        
+        // Ahora se genera el texto de la tripleta.
+        StringBuilder texto = new StringBuilder("|\t\t|\tDato Origen\t|\tDato Fuente\t|\tOperador|");
+        
+        texto.append(saltoLinea);
+        for (int i = 0; i < column1.size(); i++) {
+            texto.append("|\t").append(column1.get(i)).append("\t|\t\t")
+                    .append(column2.get(i)).append("\t|\t\t")
+                    .append(column3.get(i)).append("\t|\t")
+                    .append(column4.get(i)).append("\t|"+saltoLinea);
+        }
+        texto.append("|\t").append(column1.size()+1).append("\t|\t\t...\t|\t\t...\t|\t...\t|");
+        
+        // Se guarda el archivo.
+        guardarArchivo("Tripleta.txt", texto.toString());
     }
     
 }

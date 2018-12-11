@@ -1,4 +1,10 @@
-int c=5;
+int j=10;
+int a=2;
+int b=4;
+int x=0;
 do 
-{}
-while (bz==10);
+{double y=x+j/5;
+int z=a*b*1;
+double c=y/(z+1);
+;}
+while (x<=8)
