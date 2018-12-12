@@ -1,0 +1,51 @@
+	MOV x, 2
+	MOV y, 1
+	MOV a, 2
+	MOV b, 3.4
+	MOV a, 5
+	JMP Operacion1
+Operacion1:
+	MOV AL, 2
+	MOV AH, 4
+	MUL AL, AH
+	MOV AH, 2
+	MUL AL, AH
+	MOV AH, a
+	MOV b, AL
+	JMP Operacion2
+Operacion2:
+	MOV AL, 2
+	MOV AH, 3
+	ADD AL, AH
+	MOV x, AL
+	JMP Comparacion1
+Comparacion1:
+	MOV AL, x
+	CMP AL, 1
+	JL Operacion2
+	JMP Comparacion2
+Comparacion2:
+	MOV AL, b
+	CMP AL, 9
+	JLE Operacion1
+	JMP Operacion3
+Operacion3:
+	MOV AH, 5
+	MUL AL, AH
+	MOV a, AL
+	MOV AL, x
+	MOV AH, 0
+	MOV CL, b
+	DIV CL
+	MOV y, AL
+	JMP Comparacion3
+Comparacion3:
+	MOV AL, y
+	CMP AL, 1
+	JG Operacion3
+	JMP Operacion3restante
+Operacion3restante:
+	MOV AH, 1
+	MUL AL, AH
+	MOV a, AL
+	END

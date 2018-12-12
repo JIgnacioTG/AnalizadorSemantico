@@ -1,10 +1,17 @@
-int j=10;
+int x=2;
+double y=1;
 int a=2;
-int b=4;
-int x=0;
+double b=3.4;
+a=5;
 do 
-{double y=x+j/5;
-int z=a*b*1;
-double c=y/(z+1);
-;}
-while (x<=8)
+{b=a/2(2*4);
+do 
+{x=2+3;}
+while (x<1);}
+while (b<=9);
+do 
+{do 
+{a=5*x;}
+y=x/b;}
+while (y>1);
+a=1*2;
